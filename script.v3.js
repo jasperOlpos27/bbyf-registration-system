@@ -1,8 +1,5 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbwY-upxs48d-zvS0RHwI-ETrdKmP7bsTwQX3e-EF0u0Wpu0FDb6wLcevKz62N-JVkQs/exec";
 
-/* =========================
-   ELEMENT REFERENCES
-========================= */
 const form = document.getElementById("dataForm");
 const table = document.getElementById("dataTable");
 
@@ -14,32 +11,26 @@ const birthdayInput = document.getElementById("birthday");
 const allergyInput = document.getElementById("allergy");
 const conditionInput = document.getElementById("condition");
 
-/* =========================
-   STATE
-========================= */
 let records = [];
 let editingRow = null;
 
-/* =========================
-   FORM SUBMIT
-========================= */
+/* SUBMIT */
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  // HARD GUARD — ensures update really happens
-  const isUpdate = editingRow !== null && !isNaN(editingRow);
-
   const payload = {
-    action: isUpdate ? "update" : "create",
-    row: isUpdate ? Number(editingRow) : null,
-    name: nameInput.value.trim(),
-    role: roleInput.value.trim(),
+    action: editingRow ? "update" : "create",
+    row: editingRow,
+    name: nameInput.value,
+    role: roleInput.value,
     age: ageInput.value,
     height: heightInput.value,
     birthday: birthdayInput.value,
-    allergy: allergyInput.value.trim(),
-    condition: conditionInput.value.trim()
+    allergy: allergyInput.value,
+    condition: conditionInput.value
   };
+
+  console.log("SUBMIT PAYLOAD:", payload);
 
   await fetch(API_URL, {
     method: "POST",
@@ -52,111 +43,59 @@ form.addEventListener("submit", async (e) => {
   loadData();
 });
 
-/* =========================
-   LOAD DATA
-========================= */
+/* LOAD */
 async function loadData() {
   const res = await fetch(API_URL);
   records = await res.json();
   renderTable();
 }
 
-/* =========================
-   RENDER TABLE
-========================= */
+/* RENDER */
 function renderTable() {
   table.innerHTML = "";
 
-  if (!records.length) {
-    table.innerHTML = `
-      <tr>
-        <td colspan="9" style="text-align:center;opacity:.6">
-          No records found
-        </td>
-      </tr>
-    `;
-    return;
-  }
-
-  records.forEach((r, index) => {
+  records.forEach((r, i) => {
     table.innerHTML += `
       <tr>
-        <td>${safe(r.name)}</td>
-        <td>${safe(r.role)}</td>
-        <td>${safe(r.age)}</td>
-        <td>${safe(r.height)}</td>
-        <td>${formatDate(r.birthday)}</td>
-        <td>${safe(r.allergy)}</td>
-        <td>${safe(r.condition)}</td>
-        <td>${formatDateTime(r.date)}</td>
+        <td>${r.name}</td>
+        <td>${r.role}</td>
+        <td>${r.age}</td>
+        <td>${r.height}</td>
+        <td>${r.birthday}</td>
+        <td>${r.allergy}</td>
+        <td>${r.condition}</td>
+        <td>${r.date}</td>
         <td>
-          <button onclick="editRow(${index})">Edit</button>
-          <button onclick="deleteRow(${Number(r.row)})">Delete</button>
+          <button onclick="editRow(${i})">Edit</button>
+          <button onclick="deleteRow(${r.row})">Delete</button>
         </td>
       </tr>
     `;
   });
 }
 
-/* =========================
-   EDIT
-========================= */
+/* EDIT */
 function editRow(index) {
   const r = records[index];
+  editingRow = r.row;
 
-  // FORCE number — this fixes your save issue
-  editingRow = Number(r.row);
-
-  nameInput.value = r.name || "";
-  roleInput.value = r.role || "";
-  ageInput.value = r.age || "";
-  heightInput.value = r.height || "";
-  birthdayInput.value = r.birthday ? r.birthday.split("T")[0] : "";
-  allergyInput.value = r.allergy || "";
-  conditionInput.value = r.condition || "";
+  nameInput.value = r.name;
+  roleInput.value = r.role;
+  ageInput.value = r.age;
+  heightInput.value = r.height;
+  birthdayInput.value = r.birthday?.split("T")[0] || "";
+  allergyInput.value = r.allergy;
+  conditionInput.value = r.condition;
 }
 
-/* =========================
-   DELETE
-========================= */
+/* DELETE */
 async function deleteRow(row) {
-  if (!row || isNaN(row)) {
-    alert("Invalid row number");
-    return;
-  }
-
-  if (!confirm("Delete this record?")) return;
-
   await fetch(API_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      action: "delete",
-      row: Number(row)
-    })
+    body: JSON.stringify({ action: "delete", row })
   });
-
   loadData();
 }
 
-/* =========================
-   HELPERS
-========================= */
-function safe(v) {
-  return v ?? "";
-}
-
-function formatDate(d) {
-  if (!d) return "";
-  return d.split("T")[0];
-}
-
-function formatDateTime(d) {
-  if (!d) return "";
-  return new Date(d).toLocaleString();
-}
-
-/* =========================
-   INIT
-========================= */
 loadData();
