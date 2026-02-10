@@ -1,3 +1,5 @@
+const API_URL = "https://script.google.com/macros/s/AKfycbwWWd-jsqyRp_zVqYpUIZp8ZOwVFzPcpO5gjcc7z0IBFBIKkv52JdZHwgk5NsLd4P3S/exec";
+
 const form = document.getElementById("dataForm");
 const table = document.getElementById("dataTable");
 const searchInput = document.getElementById("searchInput");
@@ -10,70 +12,51 @@ const birthdayInput = document.getElementById("birthday");
 const allergyInput = document.getElementById("allergy");
 const conditionInput = document.getElementById("condition");
 
-let records = JSON.parse(localStorage.getItem("records")) || [];
-let editIndex = null;
-
-/* SAVE / UPDATE DATA */
-form.addEventListener("submit", (e) => {
+/* SAVE DATA */
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const record = {
-    name: nameInput.value.trim(),
-    role: roleInput.value.trim(),
-    age: ageInput.value.trim(),
-    height: heightInput.value.trim(),
+    name: nameInput.value,
+    role: roleInput.value,
+    age: ageInput.value,
+    height: heightInput.value,
     birthday: birthdayInput.value,
-    allergy: allergyInput.value.trim(),
-    condition: conditionInput.value.trim(),
-    date: new Date().toLocaleDateString()
+    allergy: allergyInput.value,
+    condition: conditionInput.value
   };
 
-  if (editIndex !== null) {
-    records[editIndex] = record; // UPDATE
-    editIndex = null;
-  } else {
-    records.push(record); // CREATE
-  }
+  await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify(record)
+  });
 
-  localStorage.setItem("records", JSON.stringify(records));
   form.reset();
-  renderTable(records);
+  loadData();
 });
 
-/* SEARCH (ANY FIELD) */
-searchInput.addEventListener("input", () => {
+/* LOAD SHARED DATA */
+async function loadData() {
+  const res = await fetch(API_URL);
+  const records = await res.json();
+
+  renderTable(records);
+}
+
+/* SEARCH */
+searchInput.addEventListener("input", async () => {
   const keyword = searchInput.value.toLowerCase();
+  const res = await fetch(API_URL);
+  const records = await res.json();
 
   const filtered = records.filter(r =>
-    Object.values(r).some(value =>
-      String(value).toLowerCase().includes(keyword)
+    Object.values(r).some(v =>
+      String(v).toLowerCase().includes(keyword)
     )
   );
 
   renderTable(filtered);
 });
-
-/* EDIT RECORD */
-function editRecord(index) {
-  const r = records[index];
-
-  nameInput.value = r.name;
-  roleInput.value = r.role;
-  ageInput.value = r.age;
-  heightInput.value = r.height;
-  birthdayInput.value = r.birthday;
-  allergyInput.value = r.allergy;
-  conditionInput.value = r.condition;
-
-  editIndex = index;
-}
-
-/* DELETE RECORD */
-function deleteRecord(index) {
-  records.splice(index, 1);
-  localStorage.setItem("records", JSON.stringify(records));
-  renderTable(records);
-}
 
 /* RENDER TABLE */
 function renderTable(data) {
@@ -90,7 +73,7 @@ function renderTable(data) {
     return;
   }
 
-  data.forEach((r, index) => {
+  data.forEach(r => {
     table.innerHTML += `
       <tr>
         <td>${r.name}</td>
@@ -101,14 +84,10 @@ function renderTable(data) {
         <td>${r.allergy}</td>
         <td>${r.condition}</td>
         <td>${r.date}</td>
-        <td>
-          <button onclick="editRecord(${index})">Edit</button>
-          <button onclick="deleteRecord(${index})">Delete</button>
-        </td>
       </tr>
     `;
   });
 }
 
 /* INITIAL LOAD */
-renderTable(records);
+loadData();
