@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbwY-upxs48d-zvS0RHwI-ETrdKmP7bsTwQX3e-EF0u0Wpu0FDb6wLcevKz62N-JVkQs/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzc8vHFT1EroHj3vGsi0322NZdiQpy6HS_VEaPJIX-fNFZmp93KB9bDbhj0y_9-KZwd/exec";
 
 const form = document.getElementById("dataForm");
 const table = document.getElementById("dataTable");
@@ -99,3 +99,4 @@ async function deleteRow(row) {
 }
 
 loadData();
+
