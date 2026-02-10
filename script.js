@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbzWE5s-wWYJ7TSmipIa7eCwON9UiT65TwD2hBPITO84gqatJdZX2NDT3oyRqdCjBp5c/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwY-upxs48d-zvS0RHwI-ETrdKmP7bsTwQX3e-EF0u0Wpu0FDb6wLcevKz62N-JVkQs/exec";
 
 const form = document.getElementById("dataForm");
 const table = document.getElementById("dataTable");
