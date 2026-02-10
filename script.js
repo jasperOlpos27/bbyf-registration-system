@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbwWWd-jsqyRp_zVqYpUIZp8ZOwVFzPcpO5gjcc7z0IBFBIKkv52JdZHwgk5NsLd4P3S/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwLmJaaCMTFJiahfX7xJ-gts0M-UKdCWHrxRJnbMvhe92Wqj6NKnpl99Y-svuJhP6tv/exec";
 
 const form = document.getElementById("dataForm");
 const table = document.getElementById("dataTable");
@@ -91,3 +91,4 @@ function renderTable(data) {
 
 /* INITIAL LOAD */
 loadData();
+
