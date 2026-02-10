@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Simple Encoding System</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+ <div class="header">
+  <h1>BBYF REGISTRATION SYSTEM</h1>
+  <img src="0611.png" class="logo" alt="BBYF Logo">
+</div>
+<h2 class="section-title">Information Database</h2>
+
+<!-- SEARCH -->
+<input 
+  type="text" 
+  id="searchInput" 
+  placeholder="Search name, role, age, height, allergy, condition..."
+  style="width:100%; margin-bottom:20px;"
+>
+
+<form id="dataForm">
+  <input type="text" id="name" placeholder="Full Name" required>
+  <input type="text" id="role" placeholder="Role" required>
+  <input type="number" id="age" placeholder="Age">
+  <input type="text" id="height" placeholder="Height">
+  <input type="date" id="birthday">
+  <input type="text" id="allergy" placeholder="Allergy">
+  <input type="text" id="condition" placeholder="Health Condition">
+
+  <button type="submit">Save</button>
+</form>
+
+
+
+  <table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Role</th>
+      <th>Age</th>
+      <th>Height</th>
+      <th>Birthday</th>
+      <th>Allergy</th>
+      <th>Condition</th>
+      <th>Date</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody id="dataTable"></tbody>
+</table>
+
+
+  <script src="script.js"></script>
+</body>
+</html>
