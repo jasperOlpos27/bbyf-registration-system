@@ -1,30 +1,43 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbwY-upxs48d-zvS0RHwI-ETrdKmP7bsTwQX3e-EF0u0Wpu0FDb6wLcevKz62N-JVkQs/exec";
 
+/* FORM + TABLE */
 const form = document.getElementById("dataForm");
 const table = document.getElementById("dataTable");
 
+/* INPUTS (EXPLICIT – NO GLOBAL VARS) */
+const nameInput = document.getElementById("name");
+const roleInput = document.getElementById("role");
+const ageInput = document.getElementById("age");
+const heightInput = document.getElementById("height");
+const birthdayInput = document.getElementById("birthday");
+const allergyInput = document.getElementById("allergy");
+const conditionInput = document.getElementById("condition");
+
+/* STATE */
 let records = [];
 let editingRow = null;
 
-/* SAVE / UPDATE */
+/* SUBMIT (CREATE / UPDATE) */
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const payload = {
     action: editingRow ? "update" : "create",
     row: editingRow,
-    name: name.value,
-    role: role.value,
-    age: age.value,
-    height: height.value,
-    birthday: birthday.value,
-    allergy: allergy.value,
-    condition: condition.value
+    name: nameInput.value,
+    role: roleInput.value,
+    age: ageInput.value,
+    height: heightInput.value,
+    birthday: birthdayInput.value,
+    allergy: allergyInput.value,
+    condition: conditionInput.value
   };
 
   await fetch(API_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify(payload)
   });
 
@@ -43,6 +56,17 @@ async function loadData() {
 /* RENDER TABLE */
 function renderTable(data) {
   table.innerHTML = "";
+
+  if (!data || data.length === 0) {
+    table.innerHTML = `
+      <tr>
+        <td colspan="9" style="text-align:center; opacity:0.6;">
+          No records found
+        </td>
+      </tr>
+    `;
+    return;
+  }
 
   data.forEach((r, index) => {
     table.innerHTML += `
@@ -70,25 +94,32 @@ function editRow(index) {
 
   editingRow = r.row;
 
-  name.value = r.name || "";
-  role.value = r.role || "";
-  age.value = r.age || "";
-  height.value = r.height || "";
-  birthday.value = r.birthday ? r.birthday.split("T")[0] : "";
-  allergy.value = r.allergy || "";
-  condition.value = r.condition || "";
+  nameInput.value = r.name || "";
+  roleInput.value = r.role || "";
+  ageInput.value = r.age || "";
+  heightInput.value = r.height || "";
+  birthdayInput.value = r.birthday ? r.birthday.split("T")[0] : "";
+  allergyInput.value = r.allergy || "";
+  conditionInput.value = r.condition || "";
 }
 
 /* DELETE */
 async function deleteRow(row) {
+  if (!row) {
+    alert("Row number missing.");
+    return;
+  }
+
   if (!confirm("Delete this record?")) return;
 
   await fetch(API_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify({
       action: "delete",
-      row
+      row: row
     })
   });
 
@@ -96,14 +127,14 @@ async function deleteRow(row) {
 }
 
 /* HELPERS */
-function formatDate(d) {
-  if (!d) return "";
-  return d.split("T")[0];
+function formatDate(dateStr) {
+  if (!dateStr) return "";
+  return dateStr.split("T")[0];
 }
 
-function formatDateTime(d) {
-  if (!d) return "";
-  return new Date(d).toLocaleString();
+function formatDateTime(dateStr) {
+  if (!dateStr) return "";
+  return new Date(dateStr).toLocaleString();
 }
 
 /* INIT */
