@@ -1,73 +1,91 @@
-const SPREADSHEET_ID = "1vowv0ktHTMrS_5_0R8o3VEWS-029sTOvU0h7GQkk3W8";
-const SHEET_NAME = "Data"; // or "Data" if you renamed it
+const API_URL = "https://script.google.com/macros/s/AKfycbzWE5s-wWYJ7TSmipIa7eCwON9UiT65TwD2hBPITO84gqatJdZX2NDT3oyRqdCjBp5c/exec";
 
-function getSheet() {
-  return SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
+const form = document.getElementById("dataForm");
+const table = document.getElementById("dataTable");
+
+let editingRow = null;
+
+/* SUBMIT */
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const payload = {
+    action: editingRow ? "update" : "create",
+    row: editingRow,
+    name: name.value,
+    role: role.value,
+    age: age.value,
+    height: height.value,
+    birthday: birthday.value,
+    allergy: allergy.value,
+    condition: condition.value
+  };
+
+  await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  form.reset();
+  editingRow = null;
+  loadData();
+});
+
+/* LOAD */
+async function loadData() {
+  const res = await fetch(API_URL);
+  const data = await res.json();
+  renderTable(data);
 }
 
-/* CREATE */
-function doPost(e) {
-  const sheet = getSheet();
-  const data = JSON.parse(e.postData.contents);
+/* RENDER */
+function renderTable(data) {
+  table.innerHTML = "";
 
-  if (data.action === "update") {
-    const row = data.row;
-    sheet.getRange(row, 1, 1, 7).setValues([[
-      data.name,
-      data.role,
-      data.age,
-      data.height,
-      data.birthday,
-      data.allergy,
-      data.condition
-    ]]);
-
-    return output({ success: true });
-  }
-
-  if (data.action === "delete") {
-    sheet.deleteRow(data.row);
-    return output({ success: true });
-  }
-
-  // CREATE
-  sheet.appendRow([
-    data.name,
-    data.role,
-    data.age,
-    data.height,
-    data.birthday,
-    data.allergy,
-    data.condition,
-    new Date()
-  ]);
-
-  return output({ success: true });
+  data.forEach(r => {
+    table.innerHTML += `
+      <tr>
+        <td>${r.name}</td>
+        <td>${r.role}</td>
+        <td>${r.age}</td>
+        <td>${r.height}</td>
+        <td>${r.birthday}</td>
+        <td>${r.allergy}</td>
+        <td>${r.condition}</td>
+        <td>${r.date}</td>
+        <td>
+          <button onclick='editRow(${JSON.stringify(r)})'>Edit</button>
+          <button onclick='deleteRow(${r.row})'>Delete</button>
+        </td>
+      </tr>
+    `;
+  });
 }
 
-/* READ */
-function doGet() {
-  const sheet = getSheet();
-  const rows = sheet.getDataRange().getValues();
-  rows.shift();
-
-  const records = rows.map((r, i) => ({
-    row: i + 2, // actual row number in sheet
-    name: r[0],
-    role: r[1],
-    age: r[2],
-    height: r[3],
-    birthday: r[4],
-    allergy: r[5],
-    condition: r[6],
-    date: r[7]
-  }));
-
-  return output(records);
+/* EDIT */
+function editRow(r) {
+  editingRow = r.row;
+  name.value = r.name;
+  role.value = r.role;
+  age.value = r.age;
+  height.value = r.height;
+  birthday.value = r.birthday;
+  allergy.value = r.allergy;
+  condition.value = r.condition;
 }
 
-function output(data) {
-  return ContentService
-    .createTextOutput(JSON.stringify(data))
-    .setMimeType(ContentService.MimeType.JSON);
+/* DELETE */
+async function deleteRow(row) {
+  if (!confirm("Delete this record?")) return;
+
+  await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "delete", row })
+  });
+
+  loadData();
 }
+
+loadData();
